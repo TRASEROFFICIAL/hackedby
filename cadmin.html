@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Admin Panel - Meta Chat 🔥</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #0d1117; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        h2 { margin-bottom: 15px; text-shadow: 0 0 5px cyan; }
+        #chat-container { width: 95%; max-width: 600px; background: #161b22; border-radius: 10px; box-shadow: 0 0 8px cyan; padding: 10px; }
+        #chat-box { max-height: 60vh; overflow-y: auto; }
+        .message { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 8px; border-radius: 5px; margin: 5px 0; }
+        .username { font-weight: bold; color: cyan; }
+        .hapus-btn { background: red; padding: 5px 10px; border: none; color: white; border-radius: 5px; cursor: pointer; }
+        .hapus-btn:hover { background: darkred; }
+        #hapusSemua { margin-top: 10px; padding: 10px; background: red; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #hapusSemua:hover { background: darkred; }
+        .centang-btn { background: #25d366; padding: 5px 10px; border: none; color: black; border-radius: 5px; cursor: pointer; }
+        .centang-btn:hover { background: #1faa5c; }
+    </style>
+</head>
+<body>
+
+    <h2>🔥 Admin Panel - Kelola Chat</h2>
+    <div id="chat-container">
+        <div id="chat-box"></div>
+    </div>
+    <button id="hapusSemua" onclick="hapusSemuaChat()">🗑 Hapus Semua Chat</button>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBVMpOCjY9gdd4UkSa",
+            authDomain: "yanofc-1ecd3.firebaseapp.com",
+            databaseURL: "https://yanofc-1ecd3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "yanofc-1ecd3",
+            storageBucket: "yanofc-1ecd3.appspot.com",
+            messagingSenderId: "843043156565",
+            appId: "1:843043156565:web:e00942a837d30e4b4a9adc"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database().ref("chats");
+
+        function muatChat() {
+            db.on("value", function(snapshot) {
+                let chatBox = document.getElementById("chat-box");
+                chatBox.innerHTML = "";
+
+                snapshot.forEach(function(childSnapshot) {
+                    let chat = childSnapshot.val();
+                    let id = childSnapshot.key;
+
+                    let listItem = document.createElement("div");
+                    listItem.classList.add("message");
+
+                    let nameSpan = document.createElement("span");
+                    nameSpan.innerHTML = `<span class="username">${chat.user}</span> ${chat.isPremium ? "✅" : ""}: ${chat.message}`;
+
+                    let hapusButton = document.createElement("button");
+                    hapusButton.textContent = "Hapus";
+                    hapusButton.classList.add("hapus-btn");
+                    hapusButton.onclick = function() {
+                        if (confirm("Yakin ingin menghapus chat ini?")) {
+                            db.child(id).remove();
+                        }
+                    };
+
+                    let centangButton = document.createElement("button");
+                    centangButton.textContent = chat.isPremium ? "del verif" : "verif";
+                    centangButton.classList.add("centang-btn");
+                    centangButton.onclick = function() {
+                        db.child(id).update({ isPremium: !chat.isPremium });
+                    };
+
+                    listItem.appendChild(nameSpan);
+                    listItem.appendChild(centangButton);
+                    listItem.appendChild(hapusButton);
+                    chatBox.appendChild(listItem);
+                });
+            });
+        }
+
+        function hapusSemuaChat() {
+            if (confirm("Yakin ingin menghapus semua chat?")) {
+                db.remove().then(() => {
+                    alert("Semua chat berhasil dihapus!");
+                });
+            }
+        }
+
+        muatChat();
+    </script>
+
+</body>
+</html>

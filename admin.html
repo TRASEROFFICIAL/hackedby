@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h2 {
+            color: #ff3333;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: #222;
+            margin: 5px;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .hapus-btn {
+            background: red;
+            padding: 5px 10px;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .hapus-btn:hover {
+            background: darkred;
+        }
+
+        /* Tombol ke cadmin.html */
+        .admin-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #ff3333, #ff6600);
+            color: white;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 99, 71, 0.5);
+            transition: 0.3s;
+        }
+        .admin-btn:hover {
+            background: linear-gradient(45deg, #ff6600, #ff3333);
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(255, 99, 71, 0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Panel admin html</h2>
+
+    <!-- TOMBOL KEREN KE CADMIN.HTML -->
+    <button class="admin-btn" onclick="window.location.href='cadmin.html'">admin chet</button>
+
+    <ul id="daftarHalaman"></ul>
+
+    <script>
+        // KONFIGURASI FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyBVMpOCjY9gdd4UkSa",
+            authDomain: "yanofc-1ecd3.firebaseapp.com",
+            databaseURL: "https://yanofc-1ecd3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "yanofc-1ecd3",
+            storageBucket: "yanofc-1ecd3.appspot.com",
+            messagingSenderId: "843043156565",
+            appId: "1:843043156565:web:e00942a837d30e4b4a9adc"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function muatHalaman() {
+            database.ref("halaman").on("value", (snapshot) => {
+                let daftar = document.getElementById("daftarHalaman");
+                daftar.innerHTML = "";
+
+                snapshot.forEach((childSnapshot) => {
+                    let data = childSnapshot.val();
+                    let id = childSnapshot.key;
+
+                    let listItem = document.createElement("li");
+                    let nameSpan = document.createElement("span");
+                    nameSpan.textContent = data.nama;
+
+                    let hapusButton = document.createElement("button");
+                    hapusButton.textContent = "Hapus";
+                    hapusButton.classList.add("hapus-btn");
+                    hapusButton.onclick = function() {
+                        if (confirm("Yakin ingin menghapus halaman ini?")) {
+                            database.ref("halaman/" + id).remove().then(() => {
+                                alert("Halaman berhasil dihapus!");
+                            });
+                        }
+                    };
+
+                    listItem.appendChild(nameSpan);
+                    listItem.appendChild(hapusButton);
+                    daftar.appendChild(listItem);
+                });
+            });
+        }
+
+        muatHalaman();
+    </script>
+
+</body>
+</html>

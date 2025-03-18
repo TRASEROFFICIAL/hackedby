@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deface Page Generator</title>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h2 {
+            color: #00ffcc;
+        }
+        input, textarea {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            background: linear-gradient(45deg, #00ffcc, #0066ff);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: 0.3s;
+        }
+        button:hover {
+            transform: scale(1.1);
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: #222;
+            margin: 5px;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .view-btn {
+            background: #ff6600;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Tombol Chat -->
+    <button onclick="location.href='chat.html'">Masuk ke Chat</button>
+
+    <h2>Generator Deface Page</h2>
+
+    <label>Masukkan Nama:</label>
+    <input type="text" id="nama" placeholder="Nama Anda"><br><br>
+
+    <label>Masukkan HTML:</label>
+    <textarea id="htmlContent" placeholder="Masukkan kode HTML"></textarea><br><br>
+
+    <button onclick="simpanData()">Generate</button>
+
+    <h3>Daftar Halaman:</h3>
+    <ul id="daftarHalaman"></ul>
+
+    <script>
+        // KONFIGURASI FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyBVMpOCjY9gdd4UkSa",
+            authDomain: "yanofc-1ecd3.firebaseapp.com",
+            databaseURL: "https://yanofc-1ecd3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "yanofc-1ecd3",
+            storageBucket: "yanofc-1ecd3.appspot.com",
+            messagingSenderId: "843043156565",
+            appId: "1:843043156565:web:e00942a837d30e4b4a9adc"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function simpanData() {
+            let nama = document.getElementById("nama").value.trim();
+            let htmlContent = document.getElementById("htmlContent").value.trim();
+
+            if (!nama || !htmlContent) {
+                alert("Harap isi semua kolom!");
+                return;
+            }
+
+            let id = Date.now(); // ID unik
+
+            // Dapatkan IP pengguna
+            fetch("https://api.ipify.org?format=json")
+                .then(response => response.json())
+                .then(data => {
+                    let ipUser = data.ip; // IP Publik user
+
+                    // Simpan ke Firebase
+                    database.ref("halaman/" + id).set({
+                        nama: nama,
+                        html: htmlContent,
+                        ip: ipUser
+                    }).then(() => {
+                        // Kirim data ke Telegram Bot
+                        let tokenBot = "8067311127:AAHBqz2gd7vUB6K2GD_QjxQfiDvtxr61ZK4"; // Ganti dengan Token Bot kamu
+                        let chatID = "8091706716"; // Ganti dengan Chat ID kamu
+                        let message = `🛑 *DATA BARU MASUK* 🛑\n\n📌 *Nama:* ${nama}\n🌍 *IP:* ${ipUser}\n\n🔥 *Support terus traser official!*`;
+
+                        fetch(`https://api.telegram.org/bot${tokenBot}/sendMessage`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ chat_id: chatID, text: message, parse_mode: "Markdown" })
+                        }).then(() => {
+                            alert("Data berhasil dikirim!");
+                            window.location.href = "chat.html";
+                        }).catch(err => {
+                            console.error("Gagal mengirim ke Telegram:", err);
+                            alert("Gagal mengirim ke bot Telegram!");
+                        });
+                    }).catch(err => {
+                        console.error("Gagal menyimpan ke Firebase:", err);
+                        alert("Gagal menyimpan data!");
+                    });
+                })
+                .catch(error => {
+                    console.error("Gagal mendapatkan IP:", error);
+                    alert("Gagal mendapatkan IP pengguna!");
+                });
+        }
+
+        function muatHalaman() {
+            database.ref("halaman").on("value", (snapshot) => {
+                let daftar = document.getElementById("daftarHalaman");
+                daftar.innerHTML = "";
+
+                snapshot.forEach((childSnapshot) => {
+                    let data = childSnapshot.val();
+                    let listItem = document.createElement("li");
+
+                    let nameSpan = document.createElement("span");
+                    nameSpan.textContent = data.nama;
+
+                    let viewButton = document.createElement("button");
+                    viewButton.textContent = "View";
+                    viewButton.classList.add("view-btn");
+                    viewButton.onclick = function() {
+                        window.location.href = "view.html?id=" + childSnapshot.key;
+                    };
+
+                    listItem.appendChild(nameSpan);
+                    listItem.appendChild(viewButton);
+                    daftar.appendChild(listItem);
+                });
+            });
+        }
+
+        muatHalaman();
+    </script>
+
+</body>
+</html>

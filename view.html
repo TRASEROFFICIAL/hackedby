@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Deface Page</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100vh;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <iframe id="defaceFrame"></iframe>
+
+    <script>
+        // KONFIGURASI FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyBVMpOCjY9gdd4UkSa",
+            authDomain: "yanofc-1ecd3.firebaseapp.com",
+            databaseURL: "https://yanofc-1ecd3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "yanofc-1ecd3",
+            storageBucket: "yanofc-1ecd3.appspot.com",
+            messagingSenderId: "843043156565",
+            appId: "1:843043156565:web:e00942a837d30e4b4a9adc"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function loadDefacePage() {
+            let params = new URLSearchParams(window.location.search);
+            let id = params.get("id");
+
+            if (id) {
+                database.ref("halaman/" + id).once("value", (snapshot) => {
+                    if (snapshot.exists()) {
+                        let data = snapshot.val();
+                        document.getElementById("defaceFrame").srcdoc = data.html;
+                    } else {
+                        document.body.innerHTML = "<h2 style='color:red;'>Halaman tidak ditemukan!</h2>";
+                    }
+                });
+            } else {
+                document.body.innerHTML = "<h2 style='color:red;'>ID tidak valid!</h2>";
+            }
+        }
+
+        loadDefacePage();
+    </script>
+
+</body>
+</html>
